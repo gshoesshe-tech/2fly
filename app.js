@@ -192,6 +192,11 @@
         location.hash = session ? '#/orders' : '#/login';
         return;
       }
+      // If already authenticated, never keep the user stuck on the login route
+      if(r === '#/login' && session){
+        location.hash = '#/orders';
+        return;
+      }
       if(r === '#/login') return renderLogin();
       if(r === '#/orders') return renderOrders();
       if(r === '#/new') return renderNewOrder();
@@ -219,6 +224,11 @@
   }
 
   function renderLogin(){
+    // If already authenticated, redirect out of login.
+    if(session){
+      location.hash = '#/orders';
+      return;
+    }
     setTop('');
     render(`
       <div class="card">
