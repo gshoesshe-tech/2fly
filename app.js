@@ -119,7 +119,8 @@
   function navFor(role){
     const isOwner = (role === 'owner' || role === 'admin');
     const base = [
-      ['Orders', '#/orders'],
+      // Default Orders view starts on ONLINE tab
+      ['Orders', '#/orders?type=online'],
       ['New Order', '#/new'],
       ['My Commission', '#/my-commission'],
     ];
@@ -148,6 +149,14 @@
       ${links}
       <button class="btn danger" id="btnLogout">Logout</button>
     `);
+
+    // Tabs: change order type filter
+    document.querySelectorAll('.orderTab').forEach((b) => {
+      b.addEventListener('click', () => {
+        const t = b.getAttribute('data-type') || 'online';
+        location.hash = `#/orders?type=${encodeURIComponent(t)}`;
+      });
+    });
     const btn = document.getElementById('btnLogout');
     if(btn){
       btn.onclick = async () => { await supabase.auth.signOut(); };
@@ -284,9 +293,15 @@
     if(!requireAuth()) return;
     const role = profile.role;
 
+    // 4 order-type tabs (ONLINE / LALAMOVE / WALKIN / TIKTOK)
+    const typeParam = (qs().get('type') || 'online').toLowerCase();
+    const allowedTypes = new Set(['online','lalamove','walkin','tiktok']);
+    const filterType = allowedTypes.has(typeParam) ? typeParam : 'online';
+
     const { data, error } = await supabase
       .from('orders_board')
       .select('*')
+      .eq('order_type', filterType)
       .order('created_at', { ascending:false })
       .limit(200);
 
@@ -348,13 +363,21 @@
           </div>
           <a class="btn primary" href="#/new">+ New Order</a>
         </div>
+
+        <div class="order-tabs" style="margin-top:12px">
+          <button class="tab orderTab ${filterType==='online'?'active':''}" data-type="online">ONLINE</button>
+          <button class="tab orderTab ${filterType==='lalamove'?'active':''}" data-type="lalamove">LALAMOVE</button>
+          <button class="tab orderTab ${filterType==='walkin'?'active':''}" data-type="walkin">WALKIN</button>
+          <button class="tab orderTab ${filterType==='tiktok'?'active':''}" data-type="tiktok">TIKTOK</button>
+        </div>
+
         <div class="hr"></div>
         <div class="tablewrap">
           <table>
             <thead>
               <tr>
                 <th>ORDER</th>
-                <th>STATUS / TYPE</th>
+                <th>STATUS</th>
                 <th>CUSTOMER</th>
                 <th>SHIP / META</th>
                 <th>ACTIONS</th>
@@ -413,7 +436,7 @@
             <div class="h1">New Order</div>
             <div class="muted">Supports 4 order types. Discount is order-level (₱) and applies to items only.</div>
           </div>
-          <a class="btn" href="#/orders">Back to Orders</a>
+          <a class="btn" href="#/orders?type=online">Back to Orders</a>
         </div>
         <div class="hr"></div>
 
@@ -421,10 +444,10 @@
           <div>
             <div class="label">Order Type</div>
             <select id="orderType" class="input">
-              <option value="online">Online (has shipping + commission)</option>
-              <option value="lalamove">Lalamove (no shipping)</option>
-              <option value="walkin">Walk-in (no shipping, phone required)</option>
-              <option value="tiktok">TikTok (retail tracking, no shipping)</option>
+              <option value="online">Online</option>
+              <option value="lalamove">Lalamove</option>
+              <option value="walkin">Walk-in</option>
+              <option value="tiktok">TikTok</option>
             </select>
           </div>
           <div id="regionWrap">

@@ -10,23 +10,27 @@
 </head>
 <body>
   <div id="app">
-    <div class="topbar">
-      <div class="brand">
-        <div class="logo">2FLY</div>
-        <div class="title">Internal Wholesale System</div>
-      </div>
-      <div id="top-actions" class="top-actions"></div>
-    </div>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="logo">2FLY</div>
+          <div class="title">Internal Wholesale System</div>
+        </div>
+        <div id="top-actions" class="top-actions"></div>
+      </aside>
 
-    <div id="main" class="main">
-      <div class="card">
-        <div class="h1">Loading…</div>
-        <div class="muted">If this stays blank, check <code>config.js</code> and your Supabase settings.</div>
-      </div>
-    </div>
+      <main class="content">
+        <div id="main" class="main">
+          <div class="card">
+            <div class="h1">Loading…</div>
+            <div class="muted">If this stays blank, check <code>config.js</code> and your Supabase settings.</div>
+          </div>
+        </div>
 
-    <div class="footer muted">
-      <span>Tip: If you updated files, hard refresh (Ctrl+Shift+R). Netlify caching can hide updates.</span>
+        <div class="footer muted">
+          <span>Tip: If you updated files, hard refresh (Ctrl+Shift+R). Netlify caching can hide updates.</span>
+        </div>
+      </main>
     </div>
   </div>
 </body>
