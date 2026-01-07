@@ -542,8 +542,13 @@ function _clearDraft(scope){
           <div class="card" style="padding:12px">
             <div class="h2">Add items (quick)</div>
             <div class="muted small">Type SKU then Enter. You can also paste multiple lines (SKU qty).</div>
+            
+            <datalist id="skuList">
+              ${products.map(p => `<option value="${escapeHtml(p.sku)}">${escapeHtml(p.name)} • ${escapeHtml(p.category)} • stock ${Number(p.qty_on_hand||0)}</option>`).join('')}
+            </datalist>
+
             <div class="row" style="margin-top:10px">
-              <input id="skuInput" class="input" placeholder="SKU (e.g., SBG-BLK)" style="flex:1" />
+              <input id="skuInput" class="input" list="skuList" placeholder="Search SKU or name (type then pick)" style="flex:1" />
               <button class="btn" id="btnAddSku">Add</button>
             </div>
             <div class="label" style="margin-top:10px">Bulk paste</div>
