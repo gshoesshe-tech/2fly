@@ -58,6 +58,34 @@
 
   let supabase = null;
   let session = null;
+
+// ===== Draft persistence (prevents losing form inputs on tab switch / token refresh) =====
+function _draftKey(scope){
+  const uid = session?.user?.id || 'anon';
+  return `2fly:draft:${scope}:${uid}`;
+}
+function _loadDraft(scope){
+  try{
+    const raw = localStorage.getItem(_draftKey(scope));
+    if(!raw) return null;
+    const obj = JSON.parse(raw);
+    // expire after 14 days
+    if(obj && obj._ts && (Date.now() - obj._ts) > 14*24*60*60*1000){
+      localStorage.removeItem(_draftKey(scope));
+      return null;
+    }
+    return obj;
+  }catch(e){ return null; }
+}
+function _saveDraft(scope, obj){
+  try{
+    localStorage.setItem(_draftKey(scope), JSON.stringify({ ...obj, _ts: Date.now() }));
+  }catch(e){}
+}
+function _clearDraft(scope){
+  try{ localStorage.removeItem(_draftKey(scope)); }catch(e){}
+}
+
   let profile = null; // {role, display_name, commission_rate}
   let productsCache = null;
 
@@ -554,7 +582,16 @@
       </div>
     `);
 
-    const itemsMap = new Map(); // sku -> {sku, qty, product}
+    const itemsMap = new Map();
+    if(Array.isArray(draft.items)){
+      draft.items.forEach(it=>{
+        if(!it) return;
+        const sku = (it.sku||'').trim();
+        const qty = Number(it.qty||0);
+        if(!sku || !(qty>0)) return;
+        itemsMap.set(sku, { sku, qty });
+      });
+    } // sku -> {sku, qty, product}
 
     function refreshItems(){
       const tbody = document.getElementById('itemsBody');
@@ -653,6 +690,7 @@
       const { data, error } = await supabase.rpc('create_order_v3', payload);
       if(error){ toast(error.message, 'error'); return; }
       toast('Order submitted.');
+      _clearDraft(DRAFT_SCOPE);
       location.hash = `#/order?id=${encodeURIComponent(data)}`; // data is UUID
     };
   }
